@@ -13,49 +13,177 @@ Mobile-first Hindi/English inventory management web app for handicraft businesse
 - Supabase PostgreSQL schema for items, parties, transactions, and transaction lines.
 - Render deployment configuration with health check endpoint.
 
-## Local setup
+## Prerequisites
 
-1. Install dependencies:
+- Node.js 20 or newer.
+- npm 10 or newer.
+- A Supabase project.
+- A Supabase service-role key for the backend only. Do not expose this key in browser code.
 
-   ```bash
-   npm install
-   ```
+## Run locally
 
-2. Create Supabase tables by running `supabase/schema.sql` in the Supabase SQL editor.
+### 1. Install dependencies
 
-3. Copy environment variables:
+```bash
+npm install
+```
 
-   ```bash
-   cp .env.example .env
-   ```
+### 2. Create the Supabase database tables
 
-4. Fill in `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env`.
+1. Open your Supabase project dashboard.
+2. Go to **SQL Editor**.
+3. Open this repository's `supabase/schema.sql` file.
+4. Copy the complete SQL file into the Supabase SQL Editor.
+5. Click **Run**.
 
-5. Start development server:
+This creates the `items`, `parties`, `stock_transactions`, and `stock_transaction_lines` tables, plus the atomic `record_stock_transaction` function used to safely add/subtract stock.
 
-   ```bash
-   npm run dev
-   ```
+### 3. Configure local environment variables
+
+Create your local `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set:
+
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+PORT=10000
+```
+
+You can find these values in Supabase under **Project Settings → API**. Use the `service_role` key only on the server/local `.env`; never paste it into frontend code.
+
+### 4. Start the local development app
+
+```bash
+npm run dev
+```
+
+Open the Vite URL shown in your terminal, usually:
+
+```text
+http://localhost:5173
+```
+
+The React frontend runs through Vite and calls the local Express API. The API runs on `http://localhost:10000`.
+
+### 5. Test the production-style local app
+
+After dependencies are installed, you can also test the same build/start flow Render uses:
+
+```bash
+npm run build
+npm start
+```
+
+Then open:
+
+```text
+http://localhost:10000
+```
+
+Check the backend health endpoint:
+
+```bash
+curl http://localhost:10000/api/health
+```
 
 ## Render deployment
 
-This repo includes `render.yaml` for a Render web service:
+This repo includes `render.yaml`, so Render can create the service from this repository.
 
-- Build command: `npm ci && npm run build`
-- Start command: `npm start`
-- Health check: `/api/health`
+### 1. Prepare Supabase first
 
-Set these environment variables in Render:
+Before deploying to Render:
 
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `APP_URL` (optional, your Render URL)
+1. Create a Supabase project.
+2. Run `supabase/schema.sql` in the Supabase SQL Editor.
+3. Copy your `SUPABASE_URL`.
+4. Copy your `service_role` key from **Project Settings → API**.
 
-For true 24/7 uptime, choose a paid Render instance. Free instances can sleep; this app exposes `/api/health` so Render health checks and external monitors can verify the service. An optional `npm run keepalive` script can ping `APP_URL/api/health` every 10 minutes from any always-on worker or external scheduler, but it cannot prevent sleep when the same free web service is already asleep.
+### 2. Create the Render service
 
-## Bill OCR format tips
+1. Push this repository to GitHub/GitLab.
+2. Open Render.
+3. Click **New + → Blueprint** if you want Render to use `render.yaml`, or **New + → Web Service** if creating it manually.
+4. Connect your repository.
+5. If using manual setup, use these values:
 
-OCR works best when each bill line has this simple structure:
+| Setting | Value |
+| --- | --- |
+| Runtime | Node |
+| Build Command | `npm ci && npm run build` |
+| Start Command | `npm start` |
+| Health Check Path | `/api/health` |
+| Node Version | `20` |
+
+The committed `render.yaml` already contains those settings.
+
+### 3. Add Render environment variables
+
+In Render, open the service and go to **Environment**. Add:
+
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+APP_URL=https://your-render-service.onrender.com
+NODE_VERSION=20
+```
+
+`APP_URL` is optional for the core app, but useful for the optional keepalive script or external monitoring.
+
+### 4. Deploy
+
+Click **Manual Deploy → Deploy latest commit**. After deployment, open:
+
+```text
+https://your-render-service.onrender.com
+```
+
+Verify the health endpoint:
+
+```text
+https://your-render-service.onrender.com/api/health
+```
+
+You should see JSON similar to:
+
+```json
+{"ok":true,"service":"stockmaster","time":"2026-05-09T00:00:00.000Z"}
+```
+
+### 5. 24/7 uptime note
+
+For true 24/7 uptime, use a paid Render instance. Free Render services can sleep when idle. This app exposes `/api/health`, so Render health checks and external monitors can verify the service.
+
+If you run an always-on worker, cron, or external uptime monitor, you can ping the app every 10 minutes:
+
+```bash
+APP_URL=https://your-render-service.onrender.com npm run keepalive
+```
+
+Important: a keepalive process running inside the same sleeping free web service cannot wake itself. Use a paid instance or an external scheduler/monitor if constant availability is required.
+
+## Common troubleshooting
+
+### `Supabase is not configured`
+
+Your `.env` or Render environment variables are missing `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY`.
+
+### `SKU ... does not exist. Add purchase stock first.`
+
+You are trying to sell an item before adding it through the purchase flow.
+
+### `Insufficient stock`
+
+The sale quantity is greater than the available stock. Add more stock first or reduce the sale quantity.
+
+### OCR did not fill all items
+
+Use a clearer image and keep bill lines close to this format:
 
 ```text
 SKU Item Name Quantity Price

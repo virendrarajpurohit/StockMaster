@@ -1,0 +1,33 @@
+{
+  "name": "stockmaster",
+  "version": "1.0.0",
+  "description": "Mobile-first bilingual inventory app for handicraft stock management",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm:server:dev\" \"npm:client:dev\"",
+    "server:dev": "node --watch server/index.js",
+    "client:dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "test": "node --test server/**/*.test.js",
+    "lint": "node --check server/index.js && node --check server/supabase.js && node --check server/stockLogic.js",
+    "keepalive": "node scripts/keepalive.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^8.2.2",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "tesseract.js": "^5.1.1",
+    "vite": "^5.4.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {}
+}

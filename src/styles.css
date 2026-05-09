@@ -1,0 +1,58 @@
+:root { font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #17312f; background: #effaf7; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { width: min(980px, 100%); margin: 0 auto; padding: 14px; padding-bottom: 90px; }
+.hero { background: linear-gradient(135deg, #0f766e, #14b8a6); color: white; border-radius: 24px; padding: 22px; display: flex; justify-content: space-between; gap: 16px; align-items: center; box-shadow: 0 16px 45px rgba(15, 118, 110, .25); }
+h1, h2, p { margin-top: 0; }
+.hero p { margin-bottom: 0; opacity: .9; }
+button, input, select { font: inherit; }
+button { border: 0; border-radius: 14px; padding: 12px 14px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+.lang, .ghost { color: #0f766e; background: #e6fffb; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+.stat { background: white; padding: 14px; border-radius: 18px; box-shadow: 0 10px 25px rgba(13, 148, 136, .08); }
+.stat strong { display: block; font-size: 1.6rem; color: #0f766e; }
+.stat span { color: #55716e; font-size: .9rem; }
+.tabs { position: sticky; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: rgba(239, 250, 247, .94); padding: 10px 0; backdrop-filter: blur(10px); }
+.tabs button { min-height: 58px; flex-direction: column; font-size: .78rem; color: #426461; background: white; box-shadow: 0 8px 20px rgba(0,0,0,.05); }
+.tabs svg { width: 19px; height: 19px; }
+.tabs .active { background: #0f766e; color: white; }
+.card { background: white; border-radius: 24px; padding: 18px; box-shadow: 0 12px 34px rgba(15, 118, 110, .09); margin-top: 14px; }
+.form { display: grid; gap: 14px; }
+label { display: grid; gap: 6px; font-weight: 700; color: #315451; }
+input, select { width: 100%; border: 1px solid #cde5e0; border-radius: 14px; padding: 13px 12px; background: #fbfffe; color: #17312f; min-height: 48px; }
+input:focus, select:focus { outline: 3px solid #99f6e4; border-color: #0f766e; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid3 { display: grid; grid-template-columns: 1.2fr .7fr .8fr; gap: 10px; }
+.line { border: 1px dashed #aadbd2; border-radius: 18px; padding: 12px; display: grid; gap: 10px; background: #fbfffe; }
+.uploader { position: relative; min-height: 62px; border: 2px dashed #0f766e; border-radius: 18px; color: #0f766e; display: flex; align-items: center; justify-content: center; gap: 8px; background: #f0fdfa; font-weight: 800; overflow: hidden; }
+.uploader input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.hint { display: flex; align-items: center; gap: 8px; margin-bottom: 0; color: #55716e; }
+.primary { background: #0f766e; color: white; min-height: 54px; font-size: 1rem; }
+.secondary { background: #ccfbf1; color: #0f766e; }
+.notice, .success, .error { padding: 12px; border-radius: 14px; font-weight: 700; }
+.notice { background: #fff7ed; color: #9a3412; }
+.success { background: #dcfce7; color: #166534; }
+.error { background: #fee2e2; color: #991b1b; margin: 12px 0; }
+.search { position: relative; }
+.search svg { position: absolute; left: 12px; bottom: 15px; color: #55716e; }
+.search input { padding-left: 40px; }
+.stockList { display: grid; gap: 10px; margin-top: 14px; }
+.stockItem { display: grid; grid-template-columns: 88px 1fr 54px; gap: 10px; align-items: center; padding: 12px; border: 1px solid #e1efec; border-radius: 16px; }
+.stockItem strong { color: #0f766e; }
+.stockItem span, .tx span { display: block; color: #6a7f7c; font-size: .86rem; }
+.stockItem em { background: #dcfce7; color: #166534; border-radius: 999px; padding: 8px; text-align: center; font-style: normal; font-weight: 900; }
+.stockItem.low em { background: #fee2e2; color: #991b1b; }
+.tx { border-bottom: 1px solid #e1efec; padding: 12px 0; }
+.tx:last-child { border-bottom: 0; }
+.tx ul { margin: 8px 0 0; padding-left: 18px; color: #315451; }
+@media (max-width: 680px) {
+  main { padding: 10px; padding-bottom: 90px; }
+  .hero { border-radius: 18px; padding: 18px; align-items: flex-start; }
+  .hero h1 { font-size: 1.55rem; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+  .card { padding: 14px; border-radius: 18px; }
+  .stockItem { grid-template-columns: 76px 1fr 48px; }
+  .tabs { left: 0; right: 0; }
+}

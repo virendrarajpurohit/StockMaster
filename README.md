@@ -54,7 +54,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 PORT=10000
 ```
 
-You can find these values in Supabase under **Project Settings → API**. The local Express server automatically reads this `.env` file when you run `npm run dev` or `npm start`. Use the `service_role` key only on the server/local `.env`; never paste it into frontend code.
+You can find these values in Supabase under **Project Settings → API**. Use the `service_role` key only on the server/local `.env`; never paste it into frontend code.
 
 ### 4. Start the local development app
 
@@ -68,7 +68,7 @@ Open the Vite URL shown in your terminal, usually:
 http://localhost:5173
 ```
 
-The React frontend runs through Vite and calls the local Express API. The API runs on `http://localhost:10000`. The Vite dev server uses `vite.config.js` to proxy `/api/*` requests to the Express server, so keep both processes from `npm run dev` running.
+The React frontend runs through Vite and calls the local Express API. The API runs on `http://localhost:10000`.
 
 ### 5. Test the production-style local app
 
@@ -171,11 +171,7 @@ Important: a keepalive process running inside the same sleeping free web service
 
 ### `Supabase is not configured`
 
-Your `.env` or Render environment variables are missing `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY`. In local development, restart `npm run dev` after changing `.env`.
-
-### `Expected JSON from /api/...` or the page crashes after startup
-
-Make sure the Express API server is running. Use `npm run dev` rather than only `npm run client:dev`, because the Vite frontend needs the backend API. You can also open `http://localhost:10000/api/health` to confirm the backend is alive.
+Your `.env` or Render environment variables are missing `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY`.
 
 ### `SKU ... does not exist. Add purchase stock first.`
 

@@ -1,4 +1,3 @@
-import '../server/loadEnv.js';
 const url = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL;
 const minutes = Number(process.env.KEEPALIVE_MINUTES || 10);
 

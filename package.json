@@ -10,7 +10,7 @@
     "build": "vite build",
     "start": "node server/index.js",
     "test": "node --test server/**/*.test.js",
-    "lint": "node --check server/index.js && node --check server/supabase.js && node --check server/stockLogic.js && node --check server/loadEnv.js && node --check scripts/keepalive.js && node --check vite.config.js",
+    "lint": "node --check server/index.js && node --check server/supabase.js && node --check server/stockLogic.js",
     "keepalive": "node scripts/keepalive.js"
   },
   "engines": {

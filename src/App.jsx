@@ -19,22 +19,9 @@ const blankLine = { sku: '', name: '', material: 'Wooden', quantity: 1, unit_pri
 
 async function api(path, options = {}) {
   const response = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...options });
-  const contentType = response.headers.get('content-type') || '';
-
-  if (!contentType.includes('application/json')) {
-    const text = await response.text();
-    const preview = text.replace(/\s+/g, ' ').slice(0, 120);
-    throw new Error(`Expected JSON from ${path}, but received ${contentType || 'unknown content type'}. Check that the API server is running. ${preview}`);
-  }
-
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'Request failed');
   return data;
-}
-
-function assertArray(value, label) {
-  if (Array.isArray(value)) return value;
-  throw new Error(`${label} API returned an unexpected response. Please check the server logs and Supabase configuration.`);
 }
 
 function Stat({ label, value }) {
@@ -112,7 +99,7 @@ function TransactionForm({ mode, lang, onSaved, stock }) {
     <div className="uploader"><Upload size={18}/><span>{t.upload}</span><input type="file" accept="image/*" capture="environment" onChange={(e) => scanBill(e.target.files?.[0])} disabled={busy}/></div>
     <p className="hint"><Camera size={16}/> {t.manual}</p>
     {items.map((line, index) => {
-      const available = (Array.isArray(stock) ? stock : []).find((item) => item.sku === String(line.sku).toUpperCase())?.current_stock;
+      const available = stock.find((item) => item.sku === String(line.sku).toUpperCase())?.current_stock;
       return <div className="line" key={index}>
         <div className="grid2"><label>{t.sku}<input required value={line.sku} onChange={(e) => updateLine(index, 'sku', e.target.value)} list="sku-list" /></label><label>{t.item}<input required value={line.name} onChange={(e) => updateLine(index, 'name', e.target.value)} /></label></div>
         <div className="grid3"><label>{t.material}<select value={line.material} onChange={(e) => updateLine(index, 'material', e.target.value)}><option>Wooden</option><option>Metal</option><option>Fabric</option><option>Stone</option><option>Other</option></select></label><label>{t.qty}<input required type="number" min="1" value={line.quantity} onChange={(e) => updateLine(index, 'quantity', e.target.value)} /></label><label>{t.price}<input type="number" min="0" step="0.01" value={line.unit_price ?? ''} onChange={(e) => updateLine(index, 'unit_price', e.target.value)} /></label></div>
@@ -120,7 +107,7 @@ function TransactionForm({ mode, lang, onSaved, stock }) {
         <button type="button" className="ghost" onClick={() => removeLine(index)}>{t.remove}</button>
       </div>;
     })}
-    <datalist id="sku-list">{(Array.isArray(stock) ? stock : []).map((item) => <option key={item.id} value={item.sku}>{item.name}</option>)}</datalist>
+    <datalist id="sku-list">{stock.map((item) => <option key={item.id} value={item.sku}>{item.name}</option>)}</datalist>
     <button type="button" className="secondary" onClick={() => setItems((rows) => [...rows, { ...blankLine }])}><PlusCircle size={18}/> {t.addLine}</button>
     <button disabled={busy} className="primary">{busy ? 'Saving...' : (isSale ? t.saveSale : t.saveBuy)}</button>
     {message && <div className={message === t.success ? 'success' : 'notice'}>{message}</div>}
@@ -141,26 +128,22 @@ function App() {
     try {
       setError('');
       const [items, dash, tx] = await Promise.all([api('/api/items'), api('/api/dashboard'), api('/api/transactions')]);
-      setStock(assertArray(items, 'Items'));
-      setDashboard(dash && typeof dash === 'object' ? dash : null);
-      setHistory(assertArray(tx, 'Transactions'));
+      setStock(items); setDashboard(dash); setHistory(tx);
     } catch (err) { setError(err.message); }
   }
 
   useEffect(() => { refresh(); }, []);
-  const safeStock = Array.isArray(stock) ? stock : [];
-  const safeHistory = Array.isArray(history) ? history : [];
-  const filtered = useMemo(() => safeStock.filter((item) => `${item.sku} ${item.name} ${item.material}`.toLowerCase().includes(search.toLowerCase())), [safeStock, search]);
+  const filtered = useMemo(() => stock.filter((item) => `${item.sku} ${item.name} ${item.material}`.toLowerCase().includes(search.toLowerCase())), [stock, search]);
 
   return <main>
     <header className="hero"><div><h1>{t.title}</h1><p>{t.subtitle}</p></div><button className="lang" onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}><Languages size={18}/> {lang === 'en' ? 'हिंदी' : 'English'}</button></header>
     {dashboard && <section className="stats"><Stat label={t.skus} value={dashboard.totalSkus}/><Stat label={t.active} value={dashboard.activeSkus}/><Stat label={t.total} value={dashboard.totalUnits}/><Stat label={t.low} value={dashboard.lowStock}/></section>}
     {error && <div className="error">{error}</div>}
     <nav className="tabs"><button onClick={() => setTab('purchase')} className={tab === 'purchase' ? 'active' : ''}><PlusCircle/> {t.purchase}</button><button onClick={() => setTab('sale')} className={tab === 'sale' ? 'active' : ''}><ShoppingBag/> {t.sale}</button><button onClick={() => setTab('stock')} className={tab === 'stock' ? 'active' : ''}><Package/> {t.stock}</button><button onClick={() => setTab('history')} className={tab === 'history' ? 'active' : ''}><History/> {t.history}</button></nav>
-    {tab === 'purchase' && <TransactionForm mode="purchase" lang={lang} onSaved={refresh} stock={safeStock}/>} 
-    {tab === 'sale' && <TransactionForm mode="sale" lang={lang} onSaved={refresh} stock={safeStock}/>} 
+    {tab === 'purchase' && <TransactionForm mode="purchase" lang={lang} onSaved={refresh} stock={stock}/>} 
+    {tab === 'sale' && <TransactionForm mode="sale" lang={lang} onSaved={refresh} stock={stock}/>} 
     {tab === 'stock' && <section className="card"><h2>{t.stock}</h2><label className="search"><Search size={18}/><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t.search}/></label><div className="stockList">{filtered.map((item) => <article className={item.current_stock <= item.reorder_level ? 'stockItem low' : 'stockItem'} key={item.id}><strong>{item.sku}</strong><div><b>{item.name}</b><span>{item.material} • {item.category}</span></div><em>{item.current_stock}</em></article>)}</div></section>}
-    {tab === 'history' && <section className="card"><h2>{t.history}</h2>{safeHistory.length === 0 && <p>{t.empty}</p>}{safeHistory.map((tx) => <article className="tx" key={tx.id}><div><strong>{tx.type === 'purchase' ? t.purchase : t.sale}</strong><span>{new Date(tx.created_at).toLocaleString()} • {tx.party_name || '-'}</span></div><ul>{tx.stock_transaction_lines?.map((line) => <li key={line.id}>{line.sku} — {line.quantity} ({line.stock_before} → {line.stock_after})</li>)}</ul></article>)}</section>}
+    {tab === 'history' && <section className="card"><h2>{t.history}</h2>{history.length === 0 && <p>{t.empty}</p>}{history.map((tx) => <article className="tx" key={tx.id}><div><strong>{tx.type === 'purchase' ? t.purchase : t.sale}</strong><span>{new Date(tx.created_at).toLocaleString()} • {tx.party_name || '-'}</span></div><ul>{tx.stock_transaction_lines?.map((line) => <li key={line.id}>{line.sku} — {line.quantity} ({line.stock_before} → {line.stock_after})</li>)}</ul></article>)}</section>}
   </main>;
 }
 

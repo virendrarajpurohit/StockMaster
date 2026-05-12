@@ -1,4 +1,3 @@
-import './loadEnv.js';
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
